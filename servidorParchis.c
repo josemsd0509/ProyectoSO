@@ -17,14 +17,34 @@ typedef struct {
 	int num;
 }ListaConectados;
 
+typedef struct{
+	int num;
+	int max;
+	int ocupado;
+	int aceptado[4];
+	Conectado jugadores[4]
+}Partida;
+
+typedef struct{
+ Partida partidas[100];
+ int num;
+}ListaPartidas;
+
+
+int players=0;
 int i=0;
 int sockets[100];
 ListaConectados listaCon;
+ListaPartidas milistaP;
 pthread_mutex_t mutex =PTHREAD_MUTEX_INITIALIZER;
 
 
 void *AtenderCliente (void *socket)
-{int sock_conn;
+{
+	
+int n;
+int partida;
+int sock_conn;
 int *s;
 s= (int *) socket;
 sock_conn= *s;
@@ -130,6 +150,10 @@ char respuesta[512];
 				row=mysql_fetch_row(resultado);
 			}
 				
+				printf ("Respuesta: %s\n", respuesta);
+				// Enviamos respuesta
+				write (sock_conn,respuesta, strlen(respuesta));
+				
 		}
 		
 		
@@ -170,6 +194,10 @@ char respuesta[512];
 			sprintf(respuesta,"2/Numero de jugadores en la partida %d que son hombres es :%d \n",partida,t);
 			
 			}
+			
+			printf ("Respuesta: %s\n", respuesta);
+			// Enviamos respuesta
+			write (sock_conn,respuesta, strlen(respuesta));
 		}
 		else if (codigo==3)
 		{   char consulta3[200];
@@ -203,8 +231,12 @@ char respuesta[512];
 				sprintf(respuesta,"3/Jugaron juntos ,%s quedo primero y %s segundo en la partida %s \n",jugador1,jugador2,row[0]);
 				row=mysql_fetch_row(resultado);	
 			}
-			
-		}
+
+		}			
+		
+		printf ("Respuesta: %s\n", respuesta);
+		// Enviamos respuesta
+		write (sock_conn,respuesta, strlen(respuesta));
 		}
 		else if(codigo==10)
 		{p = strtok(NULL,"/");
@@ -227,10 +259,52 @@ char respuesta[512];
 			else 
 				printf("Error al añadir el jugador \n");
 		 }
-		 else 
+		 else
+		{
 			printf("El jugador ya esta conectado \n");
 		}
+		 
+		 printf ("Respuesta: %s\n", respuesta);
+		 // Enviamos respuesta
+		 write (sock_conn,respuesta, strlen(respuesta));
+		}
 
+		else if(codigo==11)
+        {  int n =0;
+			printf("Empezando a invitar jugadores \n");
+		 char notificacion[200];
+		p = strtok(NULL,"/");
+		  char anfitrion[30];
+		  strcpy(anfitrion,p);
+		  p = strtok(NULL,"/");
+		  char invitados[100];
+		  strcpy(invitados,p);
+		  printf("El anfitrion es %s \n",anfitrion);
+		  
+		  printf("Esta invitando a %s \n",invitados);
+
+		  
+		  partida = AgregarJugador(&milistaP,&listaCon,invitados);
+		  milistaP.partidas[partida].aceptado[0] = 1;
+		  sprintf(notificacion, "5/%d/%s", partida, anfitrion);
+		  printf("Notificacion: %s\n", notificacion);
+		  while(n<players)
+		  {
+			  write(milistaP.partidas[partida].jugadores[n].socket,notificacion,strlen(notificacion));
+		  n++;
+			  
+		  }
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	    if((codigo==10)||(codigo==0))
 		{bucle=1;
 		char notificacion[200];
@@ -247,15 +321,6 @@ char respuesta[512];
 		}
 		}
 		
-		
-			 
-		if ((codigo!=0)&&(bucle==0))
-		{
-			
-			printf ("Respuesta: %s\n", respuesta);
-			// Enviamos respuesta
-			write (sock_conn,respuesta, strlen(respuesta));
-		}
 	}
 	// Se acabo el servicio para este cliente
 	close(sock_conn);
@@ -284,7 +349,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// establecemos el puerto de escucha
-	serv_adr.sin_port = htons(9040);
+	serv_adr.sin_port = htons(9047);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind ");
 	
@@ -381,3 +446,91 @@ int PosicionCliente (ListaConectados *lista, char nombre[20])
 	else 
 		return -1;
 }
+int AgregarJugador(ListaPartidas *listpart,ListaConectados *listcon, char jugadores[100])
+{//recibe 4 jugadores, y los agrega a una partida, devuelve el numero de la partida
+	
+	int n = 0;
+	int j = 0;
+	int encontrado = 0;
+	char *p;
+	
+	p = strtok(jugadores, "-");
+	
+	while (n < 99 && !encontrado)
+	{
+		if (listpart->partidas[n].ocupado == 0)
+		{
+			encontrado =1;
+			listpart->partidas[n].max = 4;
+		}
+		else 
+			n++;
+		
+	}
+	
+	if (encontrado == 1)
+	{    players=1;
+		int bucle=0;
+		milistaP.partidas[n].aceptado[0] == 1;
+		while ((j < listpart->partidas[n].max)&&(!bucle))
+		{   if(p==NULL)
+			bucle=1;
+			else 
+			{strcpy(listpart->partidas[n].jugadores[j].nombre, p);
+			int pos = PosicionCliente(listcon,p);
+			listpart->partidas[n].jugadores[j].socket = listcon->conectados[pos].socket;
+			printf("socket de %s es %d\n", p, listcon->conectados[pos].socket);
+			p = strtok(NULL,"-");
+			}
+			j++;
+		    players++;
+		}
+		
+		return n;
+	}
+	else 
+	{
+		return -1;
+	}
+	
+}
+int BuscarPartidas(ListaPartidas *l) 
+{//encuentra y devuelve el numero de la primera partida vacia que encuentre
+	for (int i = 0; i < 500; i++) 
+	{
+		if (l->partidas[i].ocupado == 0) 
+		{
+			return i;//numero de partida
+		}
+	}
+	return -1; // no hay partidas disponibles
+}
+
+void IniciarPartida(ListaPartidas *l)
+{//inicializa la lista de partidas
+	int i;
+	for (i = 0; i< 99; i++)
+	{
+		l->partidas[i].ocupado = 0;
+	}
+}
+
+int partidaSocket(ListaPartidas *l, int socket)
+{//encuentra y devuelve el numero de partida de un jugador determinado
+	int encontrado = 0;
+	int j;
+	int i;
+	for (i = 0; i<99 && !encontrado;i++)
+	{
+		for (j = 0; j<4;j++);
+		{
+			if (l->partidas[i].jugadores[j].socket == socket)
+				encontrado = 1;	
+		}
+	}
+	return i;
+}
+
+
+
+

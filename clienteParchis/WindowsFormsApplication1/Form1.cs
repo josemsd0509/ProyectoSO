@@ -16,46 +16,62 @@ namespace WindowsFormsApplication1
     {
         Socket server;
         Thread atender;
+        string jugadores;
 
         public Form1(Form2.Datos info)
         {
             InitializeComponent();
             conectado1.Text = info.Nombre;
-            CheckForIllegalCrossThreadCalls = false;//Necesario para acceder a threads de momento
+            CheckForIllegalCrossThreadCalls = false;//Necesario para acceder a threads de momento 
+            jugadores = "11/"+ info.Nombre+"/";
         }
+ 
+
+
 
         private void Form1_Load(object sender, EventArgs e)
-        {
-            
-          
+        {     
         }
 
+        private void NotificarPartida()
+        {
+            int pop;
+            Form3 v3 = new Form3();
+            v3.Show();
+            //v3.label1.Text = mensaje;
 
+            //pop= v3.notificar();
+            //if (pop == 1)
+            // {
+            //    MessageBox.Show("Acepto");
+            // }
+        }
         private void AtenderServidor()
         {
             while (true)
-            {
+            {    string  mensaje;
                 //Recibimos mensaje del servidor
                 byte[] msg2 = new byte[80];
                 server.Receive(msg2);
-                string [] trozos = Encoding.ASCII.GetString(msg2).Split('/');
+                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+                string [] trozos =mensaje.Split('/');
                 int codigo = Convert.ToInt32(trozos[0]);
-                string mensaje;
+               
                 switch (codigo)
                 {  
                    case 1: //respuesta a gandor de la partida 
-                   mensaje = trozos[1].Split('\0')[0];
+                   
                    MessageBox.Show("El nombre del ganador es: " + mensaje);
                    break;
                     
                     case 2://Jugadores hombres
-                    mensaje = trozos[1].Split('\0')[0];
+                     mensaje = trozos[1];
                     MessageBox.Show(mensaje);
                     break;
                       
 
                     case 3: //partida en la que jugaron juntos
-                    mensaje = trozos[1].Split('\0')[0];
+                    mensaje = trozos[1];
                     MessageBox.Show(mensaje);
                     break;
                     
@@ -69,8 +85,14 @@ namespace WindowsFormsApplication1
                        else
                      listBox33.Items.Add(Convert.ToString(trozos[i]));
                    }
-                
-                     break;
+                   break;
+
+                   case 5: //Enviar invitacion
+                  
+                   mensaje = ("El jugador "+ trozos[2]+" te invita a la partida" + trozos[1]);
+                   NotificarPartida();
+                   this.Hide();
+                   break;
 
                 }
             }
@@ -83,7 +105,7 @@ namespace WindowsFormsApplication1
             //Creamos un IPEndPoint con el ip del servidor y puerto del servidor 
             //al que deseamos conectarnos
             IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9040);           
+            IPEndPoint ipep = new IPEndPoint(direc, 9047);           
 
             //Creamos el socket 
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -170,6 +192,30 @@ namespace WindowsFormsApplication1
            
 
 
+        }
+
+
+        private void listBox33_SelectedIndexChanged(object sender, EventArgs e)
+        {  
+            string jugador;
+            jugador = conectado1.Text;
+            bool result;
+           result = jugador.Equals(listBox33.Text);
+           if (result)
+               MessageBox.Show("No puedes auto invitarte");
+             
+           else
+               invitar.Visible = true;
+           {    string suma ="-" + listBox33.Text;
+               jugadores = jugadores+suma;    
+           }
+
+        }
+
+        private void invitar_Click(object sender, EventArgs e)
+        {
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(jugadores);
+            server.Send(msg);
         }
 
       

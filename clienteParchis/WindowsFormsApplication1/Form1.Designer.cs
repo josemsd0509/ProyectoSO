@@ -44,6 +44,7 @@
             this.conectado1 = new System.Windows.Forms.TextBox();
             this.listadeconectados = new System.Windows.Forms.Label();
             this.listBox33 = new System.Windows.Forms.ListBox();
+            this.invitar = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -210,12 +211,25 @@
             this.listBox33.Size = new System.Drawing.Size(180, 130);
             this.listBox33.TabIndex = 14;
             this.listBox33.Visible = false;
+            this.listBox33.SelectedIndexChanged += new System.EventHandler(this.listBox33_SelectedIndexChanged);
+            // 
+            // invitar
+            // 
+            this.invitar.Location = new System.Drawing.Point(510, 332);
+            this.invitar.Name = "invitar";
+            this.invitar.Size = new System.Drawing.Size(128, 34);
+            this.invitar.TabIndex = 15;
+            this.invitar.Text = "Invitar";
+            this.invitar.UseVisualStyleBackColor = true;
+            this.invitar.Visible = false;
+            this.invitar.Click += new System.EventHandler(this.invitar_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(741, 562);
+            this.Controls.Add(this.invitar);
             this.Controls.Add(this.listBox33);
             this.Controls.Add(this.listadeconectados);
             this.Controls.Add(this.conectado1);
@@ -250,6 +264,7 @@
         private System.Windows.Forms.TextBox conectado1;
         private System.Windows.Forms.Label listadeconectados;
         private System.Windows.Forms.ListBox listBox33;
+        private System.Windows.Forms.Button invitar;
     }
 }
 

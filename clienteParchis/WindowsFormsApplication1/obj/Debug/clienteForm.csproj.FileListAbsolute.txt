@@ -124,3 +124,6 @@ C:\Universidad\SOworkinprogres\V2\clienteParchis\WindowsFormsApplication1\obj\De
 C:\Universidad\SOworkinprogres\V2\clienteParchis\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
 C:\Universidad\SOworkinprogres\V2\clienteParchis\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.GenerateResource.Cache
 C:\Universidad\ProyectoSO\clienteParchis\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form2.resources
+C:\Universidad\ProyectoSO\clienteParchis\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form3.resources
+C:\Universidad\SOworkinprogres\v4\clienteParchis\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Universidad\SOworkinprogres\v4\clienteParchis\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
