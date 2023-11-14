@@ -41,6 +41,10 @@
             this.jugador1 = new System.Windows.Forms.TextBox();
             this.Ganador = new System.Windows.Forms.RadioButton();
             this.button3 = new System.Windows.Forms.Button();
+            this.conectado1 = new System.Windows.Forms.TextBox();
+            this.BotonConectados = new System.Windows.Forms.Button();
+            this.listadeconectados = new System.Windows.Forms.Label();
+            this.listBox33 = new System.Windows.Forms.ListBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -176,13 +180,59 @@
             this.button3.TabIndex = 10;
             this.button3.Text = "desconectar";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // conectado1
+            // 
+            this.conectado1.Location = new System.Drawing.Point(551, 112);
+            this.conectado1.Name = "conectado1";
+            this.conectado1.Size = new System.Drawing.Size(100, 20);
+            this.conectado1.TabIndex = 11;
+            this.conectado1.Visible = false;
+            // 
+            // BotonConectados
+            // 
+            this.BotonConectados.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BotonConectados.Location = new System.Drawing.Point(485, 97);
+            this.BotonConectados.Name = "BotonConectados";
+            this.BotonConectados.Size = new System.Drawing.Size(180, 57);
+            this.BotonConectados.TabIndex = 12;
+            this.BotonConectados.Text = "Jugadores Conectados";
+            this.BotonConectados.UseVisualStyleBackColor = true;
+            this.BotonConectados.Visible = false;
+            this.BotonConectados.Click += new System.EventHandler(this.BotonConectados_Click);
+            // 
+            // listadeconectados
+            // 
+            this.listadeconectados.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.listadeconectados.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listadeconectados.Location = new System.Drawing.Point(445, 171);
+            this.listadeconectados.Name = "listadeconectados";
+            this.listadeconectados.Size = new System.Drawing.Size(34, 33);
+            this.listadeconectados.TabIndex = 13;
+            this.listadeconectados.Visible = false;
+            // 
+            // listBox33
+            // 
+            this.listBox33.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listBox33.FormattingEnabled = true;
+            this.listBox33.ItemHeight = 18;
+            this.listBox33.Location = new System.Drawing.Point(485, 172);
+            this.listBox33.Name = "listBox33";
+            this.listBox33.Size = new System.Drawing.Size(180, 130);
+            this.listBox33.TabIndex = 14;
+            this.listBox33.Visible = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(741, 562);
+            this.Controls.Add(this.listBox33);
+            this.Controls.Add(this.listadeconectados);
+            this.Controls.Add(this.BotonConectados);
+            this.Controls.Add(this.conectado1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button1);
@@ -192,6 +242,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -210,6 +261,10 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox jugador2;
+        private System.Windows.Forms.TextBox conectado1;
+        private System.Windows.Forms.Button BotonConectados;
+        private System.Windows.Forms.Label listadeconectados;
+        private System.Windows.Forms.ListBox listBox33;
     }
 }
 
