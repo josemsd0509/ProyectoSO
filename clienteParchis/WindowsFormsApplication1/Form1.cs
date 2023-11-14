@@ -8,24 +8,72 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {   
     public partial class Form1 : Form
     {
         Socket server;
-
+        Thread atender;
 
         public Form1(Form2.Datos info)
         {
             InitializeComponent();
             conectado1.Text = info.Nombre;
+            CheckForIllegalCrossThreadCalls = false;//Necesario para acceder a threads de momento
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             
           
+        }
+
+
+        private void AtenderServidor()
+        {
+            while (true)
+            {
+                //Recibimos mensaje del servidor
+                byte[] msg2 = new byte[80];
+                server.Receive(msg2);
+                string [] trozos = Encoding.ASCII.GetString(msg2).Split('/');
+                int codigo = Convert.ToInt32(trozos[0]);
+                string mensaje;
+                switch (codigo)
+                {  
+                   case 1: //respuesta a gandor de la partida 
+                   mensaje = trozos[1].Split('\0')[0];
+                   MessageBox.Show("El nombre del ganador es: " + mensaje);
+                   break;
+                    
+                    case 2://Jugadores hombres
+                    mensaje = trozos[1].Split('\0')[0];
+                    MessageBox.Show(mensaje);
+                    break;
+                      
+
+                    case 3: //partida en la que jugaron juntos
+                    mensaje = trozos[1].Split('\0')[0];
+                    MessageBox.Show(mensaje);
+                    break;
+                    
+                   case 4:     
+                   listBox33.Items.Clear();
+                   int i;
+                   for (i=1; i < trozos.Length; i++)
+                   {
+                       if (i == 1)
+                           listadeconectados.Text = trozos[1];
+                       else
+                     listBox33.Items.Add(Convert.ToString(trozos[i]));
+                   }
+                
+                     break;
+
+                }
+            }
         }
         
 
@@ -35,8 +83,7 @@ namespace WindowsFormsApplication1
             //Creamos un IPEndPoint con el ip del servidor y puerto del servidor 
             //al que deseamos conectarnos
             IPAddress direc = IPAddress.Parse("192.168.56.102");
-            IPEndPoint ipep = new IPEndPoint(direc, 9090);
-            
+            IPEndPoint ipep = new IPEndPoint(direc, 9040);           
 
             //Creamos el socket 
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -46,11 +93,8 @@ namespace WindowsFormsApplication1
                 this.BackColor = Color.Green;
                 MessageBox.Show("Conectado");
 
-               string mensaje = "10/" + conectado1.Text;
-                // Enviamos al servidor el nombre tecleado
-                byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-                server.Send(msg);
-                BotonConectados.Visible = true;
+      
+          
                 button1.Visible = false;
                 button3.Visible = true;
             }
@@ -60,6 +104,17 @@ namespace WindowsFormsApplication1
                 MessageBox.Show("No he podido conectar con el servidor");
                 return;
             }
+            //ponemos en marcha los threads
+            ThreadStart ts = delegate { AtenderServidor(); };
+            atender = new Thread(ts);
+            atender.Start();
+            listBox33.Visible = true;
+            listadeconectados.Visible = true;
+            string mensaje = "10/" + conectado1.Text;
+            // Enviamos al servidor el nombre tecleado
+            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+            server.Send(msg);
+
 
         }
 
@@ -72,11 +127,7 @@ namespace WindowsFormsApplication1
                 byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
 
-                //Recibimos la respuesta del servidor
-                byte[] msg2 = new byte[80];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split ('\0')[0];
-                MessageBox.Show("El nombre del ganador es: " + mensaje);
+               
             }
             else if (Hombres.Checked)
             {
@@ -84,14 +135,6 @@ namespace WindowsFormsApplication1
                 // Enviamos al servidor el nombre tecleado
                 byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
-
-                //Recibimos la respuesta del servidor
-                byte[] msg2 = new byte[80];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-
-                    MessageBox.Show(mensaje);
-
             }
             else
             {
@@ -100,12 +143,6 @@ namespace WindowsFormsApplication1
                 // Enviamos al servidor el nombre tecleado
                 byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
-
-                //Recibimos la respuesta del servidor
-                byte[] msg2 = new byte[80];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-                MessageBox.Show(mensaje);
             }
              
         
@@ -120,13 +157,14 @@ namespace WindowsFormsApplication1
             server.Send(msg);
 
             // Nos desconectamos
+            atender.Abort();
             this.BackColor = Color.Gray;
             server.Shutdown(SocketShutdown.Both);
             server.Close();
+
             listadeconectados.Visible = false;
-            BotonConectados.Visible = false;
             listBox33.Visible = false;
-            BotonConectados.Text = "Jugadores Conectados";
+        
             button1.Visible = true;
             button3.Visible = false;
            
@@ -134,34 +172,7 @@ namespace WindowsFormsApplication1
 
         }
 
-        private void BotonConectados_Click(object sender, EventArgs e)
-        {
-            listBox33.Items.Clear();
-            string mensaje = "11/";
-            // Enviamos al servidor el nombre tecleado
-            byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
-            server.Send(msg);
-
-            //Recibimos la respuesta del servidor
-            byte[] msg2 = new byte[80];
-            server.Receive(msg2);
-            mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-            int i;
-            char[] delimitador ={'/'};
-            string[] trozos =mensaje.Split(delimitador);
-            for (i = 0; i < trozos.Length; i++)
-            {
-                if (i == 0)
-                    listadeconectados.Text = trozos[i];
-                else
-                listBox33.Items.Add(trozos[i]);
-            }
-
-            listBox33.Visible = true;
-            listadeconectados.Visible=true;
-            BotonConectados.Text = "Actualizar";
-           
-        }
+      
 
      
     }

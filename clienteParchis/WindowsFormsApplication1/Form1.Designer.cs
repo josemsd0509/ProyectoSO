@@ -42,7 +42,6 @@
             this.Ganador = new System.Windows.Forms.RadioButton();
             this.button3 = new System.Windows.Forms.Button();
             this.conectado1 = new System.Windows.Forms.TextBox();
-            this.BotonConectados = new System.Windows.Forms.Button();
             this.listadeconectados = new System.Windows.Forms.Label();
             this.listBox33 = new System.Windows.Forms.ListBox();
             this.groupBox1.SuspendLayout();
@@ -191,18 +190,6 @@
             this.conectado1.TabIndex = 11;
             this.conectado1.Visible = false;
             // 
-            // BotonConectados
-            // 
-            this.BotonConectados.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BotonConectados.Location = new System.Drawing.Point(485, 97);
-            this.BotonConectados.Name = "BotonConectados";
-            this.BotonConectados.Size = new System.Drawing.Size(180, 57);
-            this.BotonConectados.TabIndex = 12;
-            this.BotonConectados.Text = "Jugadores Conectados";
-            this.BotonConectados.UseVisualStyleBackColor = true;
-            this.BotonConectados.Visible = false;
-            this.BotonConectados.Click += new System.EventHandler(this.BotonConectados_Click);
-            // 
             // listadeconectados
             // 
             this.listadeconectados.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
@@ -231,7 +218,6 @@
             this.ClientSize = new System.Drawing.Size(741, 562);
             this.Controls.Add(this.listBox33);
             this.Controls.Add(this.listadeconectados);
-            this.Controls.Add(this.BotonConectados);
             this.Controls.Add(this.conectado1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.groupBox1);
@@ -262,7 +248,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox jugador2;
         private System.Windows.Forms.TextBox conectado1;
-        private System.Windows.Forms.Button BotonConectados;
         private System.Windows.Forms.Label listadeconectados;
         private System.Windows.Forms.ListBox listBox33;
     }

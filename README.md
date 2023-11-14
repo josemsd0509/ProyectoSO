@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 V1
+=======
+## V1
+>>>>>>> 5e0d33f50c676c6603407b0b00cd8318f786d9f5
 
 GENERADO POR:   Jose Silva
 

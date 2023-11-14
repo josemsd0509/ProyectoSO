@@ -17,7 +17,7 @@ typedef struct {
 	int num;
 }ListaConectados;
 
-int num=0;
+int i=0;
 int sockets[100];
 ListaConectados listaCon;
 pthread_mutex_t mutex =PTHREAD_MUTEX_INITIALIZER;
@@ -34,7 +34,7 @@ int ret;
 int conexion;
 char conectados[512];
 int j;
-int i;
+
 //Estructura para almacenar resultados de cosnulatas
 MYSQL_RES *resultado;
 MYSQL_ROW row;
@@ -60,7 +60,7 @@ char respuesta[512];
 	// Entramos en un bucle para atender todas las peticiones de este cliente
 	//hasta que se desconecte
 	while (terminar ==0)
-	{
+	{    int bucle=0;
 		// Ahora recibimos la petici?n
 		ret=read(sock_conn,peticion, sizeof(peticion));
 		printf ("Recibido\n");
@@ -126,7 +126,7 @@ char respuesta[512];
 			else 
 				while(row!=NULL){
 				printf("El jugador ganador es : %s \n",row[0]);
-				sprintf (respuesta,"%s",row[0]);
+				sprintf (respuesta,"1/'%s'",row[0]);
 				row=mysql_fetch_row(resultado);
 			}
 				
@@ -167,7 +167,7 @@ char respuesta[512];
 				t++;
 				row=mysql_fetch_row(resultado);
 			}
-			sprintf(respuesta,"Numero de jugadores en la partida %d que son hombres es :%d \n",partida,t);
+			sprintf(respuesta,"2/Numero de jugadores en la partida %d que son hombres es :%d \n",partida,t);
 			
 			}
 		}
@@ -200,7 +200,7 @@ char respuesta[512];
 		{
 			while(row!=NULL){
 				printf("Jugaron juntos ,%s quedo primero y %s segundo en la partida %s \n",jugador1,jugador2,row[0]);
-				sprintf(respuesta,"Jugaron juntos ,%s quedo primero y %s segundo en la partida %s \n",jugador1,jugador2,row[0]);
+				sprintf(respuesta,"3/Jugaron juntos ,%s quedo primero y %s segundo en la partida %s \n",jugador1,jugador2,row[0]);
 				row=mysql_fetch_row(resultado);	
 			}
 			
@@ -211,9 +211,9 @@ char respuesta[512];
 		 char nombre[30];
 		 strcpy(nombre,p);
 		 int conexion;
-		 int i;
-		 i=PosicionCliente (&listaCon,nombre);
-		 if(i==-1)
+		 int pos;
+		 pos=PosicionCliente (&listaCon,nombre);
+		 if(pos==-1)
 		 {
 		 printf( "Primera conexion \n");
 		 printf("Nuevo jugador conectado %s \n" ,nombre);
@@ -230,25 +230,26 @@ char respuesta[512];
 		 else 
 			printf("El jugador ya esta conectado \n");
 		}
-		else if(codigo==11)
-		{
+
+	    if((codigo==10)||(codigo==0))
+		{bucle=1;
+		char notificacion[200];
 		printf("Buscando lista de conectados \n");
 		pthread_mutex_lock(&mutex);//no interrumpas
 		ListadeConectados(&listaCon, conectados);//haz update de la lista
 		pthread_mutex_unlock(&mutex);//molesta de nuevo
-		sprintf(respuesta, conectados);
+		sprintf(notificacion,"4/%s",conectados);
 		
-		printf("Respuesta: %s\n", respuesta);
+		printf("Respuesta: %s\n", notificacion);
 		for (j=0;j<i;j++)//este bucle le enviara la tabla actualizada a todos los conectados.
 		{
-			write(sockets[j],respuesta,strlen(respuesta));
+			write(sockets[j],notificacion,strlen(notificacion));
 		}
-			
 		}
 		
 		
 			 
-		if (codigo!=0)
+		if ((codigo!=0)&&(bucle==0))
 		{
 			
 			printf ("Respuesta: %s\n", respuesta);
@@ -283,17 +284,15 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// establecemos el puerto de escucha
-	serv_adr.sin_port = htons(9090);
+	serv_adr.sin_port = htons(9040);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind ");
 	
 	if (listen(sock_listen, 3) < 0)
 		printf("Error en el Listen \n");
 	
-	int i;
-	int sockets[100];
+	
 	pthread_t thread;
-	i=0;
 	// Bucle para atender a 5 clientes
 	for (;;){
 		printf ("Escuchando\n");
