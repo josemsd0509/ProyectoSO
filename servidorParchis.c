@@ -9,12 +9,12 @@
 #include <pthread.h>
 typedef struct{
  char nombre[20];
- int socket;
+ int socket
 }Conectado;
 
 typedef struct {
 	Conectado conectados[100];
-	int num;
+	int num
 }ListaConectados;
 
 typedef struct{
@@ -27,10 +27,10 @@ typedef struct{
 
 typedef struct{
  Partida partidas[100];
- int num;
+ int num
 }ListaPartidas;
 
-
+int aceptar=1;
 int players=0;
 int i=0;
 int sockets[100];
@@ -41,7 +41,7 @@ pthread_mutex_t mutex =PTHREAD_MUTEX_INITIALIZER;
 
 void *AtenderCliente (void *socket)
 {
-	
+char nombre[30];
 int n;
 int partida;
 int sock_conn;
@@ -54,6 +54,7 @@ int ret;
 int conexion;
 char conectados[512];
 int j;
+int numForm;
 
 //Estructura para almacenar resultados de cosnulatas
 MYSQL_RES *resultado;
@@ -98,7 +99,7 @@ char respuesta[512];
 	
 		
 		if (codigo !=0)
-		{
+		{   
 			// Ya tenemos el codigo
 			printf ("Codigo: %d\n", codigo);
 		}
@@ -107,7 +108,6 @@ char respuesta[512];
 		{
 		int dconexion;       
 		p = strtok(NULL,"/");
-		char nombre[30];
 		strcpy(nombre,p);
 		pthread_mutex_lock(&mutex);
 
@@ -240,7 +240,6 @@ char respuesta[512];
 		}
 		else if(codigo==10)
 		{p = strtok(NULL,"/");
-		 char nombre[30];
 		 strcpy(nombre,p);
 		 int conexion;
 		 int pos;
@@ -270,23 +269,29 @@ char respuesta[512];
 		}
 
 		else if(codigo==11)
-        {  int n =0;
-			printf("Empezando a invitar jugadores \n");
+        {
+		p = strtok(NULL,"/");
+		numForm=atoi(p);
+		int n =1;
+	
+	     printf("Empezando a invitar jugadores \n");
 		 char notificacion[200];
 		p = strtok(NULL,"/");
 		  char anfitrion[30];
 		  strcpy(anfitrion,p);
 		  p = strtok(NULL,"/");
 		  char invitados[100];
-		  strcpy(invitados,p);
+		  char jugadores[100];
+		  strcpy(invitados,p);  
+		  sprintf(jugadores,"%s-%s-", anfitrion,invitados);
+          printf("%s \n",jugadores);
 		  printf("El anfitrion es %s \n",anfitrion);
-		  
 		  printf("Esta invitando a %s \n",invitados);
 
 		  
-		  partida = AgregarJugador(&milistaP,&listaCon,invitados);
+		  partida = AgregarJugador(&milistaP,&listaCon,jugadores);
 		  milistaP.partidas[partida].aceptado[0] = 1;
-		  sprintf(notificacion, "5/%d/%s", partida, anfitrion);
+		  sprintf(notificacion, "5/%d/%d/%s", numForm, partida, anfitrion);
 		  printf("Notificacion: %s\n", notificacion);
 		  while(n<players)
 		  {
@@ -297,15 +302,119 @@ char respuesta[512];
 			
 		}
 		
+		else if(codigo==13)
+		{   int nform;
+		    char notificacion[100];
 		
+		     p = strtok(NULL, "/");
+	     	nform = atoi(p);
+			p = strtok(NULL, "/");
+			partida = atoi(p);
+			p = strtok(NULL, "/");
+			n = atoi(p);
+	
+			if (n == 1)//n = 1 signifca que el jugador ha aceptado
+			{ int i;
+			  i=0;
+			  sprintf(notificacion, "6/%d/0/%d",nform, partida);
+			  
+				
+				while(strcmp(milistaP.partidas[partida].jugadores[i].nombre, nombre) != 0)
+				{
+					i=i+1;
+					
+				}
+				milistaP.partidas[partida].aceptado[i] = 1;//el cliente ha aceptado, por lo tanto aceptado = 1;
+				
+				i=0;
+				while (i<4)
+				{
+					if(milistaP.partidas[partida].aceptado[i] == 1)//se añaden los jugadores que han aceptado la partida
+					{
+						sprintf(notificacion, "%s/%s", notificacion, milistaP.partidas[partida].jugadores[i].nombre);
+						
+					}
+					i=i+1;
+				}
+				sprintf(notificacion, "%s/",notificacion);
+				printf("respuesta: %s\n", notificacion);
+				i = 0;
+				while (i<4)
+				{
+					if (milistaP.partidas[partida].aceptado[n] == 1)//se les envia los jugadoes que han acpetado a todos los jugadores del lobby
+					{
+						write(milistaP.partidas[partida].jugadores[i].socket, notificacion, strlen(notificacion));
+					}
+					
+					i++;
+					
+				}
+			}
+			else
+		     {
+				sprintf(notificacion, "6/%d/1/%d/%s",nform, partida,nombre);
+				printf("Rechazada codigo: %s\n",notificacion);
+				write (milistaP.partidas[partida].jugadores[0].socket,notificacion, strlen(notificacion));
+				
+			}
+			
+		}
 		
+		else if(codigo==20)
+		{    int n=0;
+			p = strtok(NULL,"/");
+			int partida=atoi(p);
+			p= strtok(NULL,"/");
+			int numForm=atoi(p);
+			int i=0;
+			printf("Preparando partida \n");
+	         char notificacion [100];
+			sprintf(notificacion, "7/%d/%d/%d", numForm, partida,players);
+			printf("Notificacion: %s\n", notificacion);
+			while (i<players)
+			{       
+				if (milistaP.partidas[partida].aceptado[n] == 1)
+				{
+					sprintf(notificacion, "%s-%s", notificacion, milistaP.partidas[partida].jugadores[i].nombre);}
+				n++;
+				i++;
+	 		}
+			sprintf(notificacion, "%s/", notificacion);
+		    printf("Notificacion: %s\n", notificacion);
+			i=0;
+			while(i<players)
+			{
+				write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+				i++;
+				
+			}
+			
+		}
 		
+		else if(codigo==21)
+		{    int n=0;
+		p = strtok(NULL,"/");
+		int partida=atoi(p);
+		p= strtok(NULL,"/");
+		int numForm=atoi(p);
+		int i=0;
+	    char chat[2000];
+		p= strtok(NULL,"/");
+		strcpy(chat,p);
+		char notificacion [100];
+		sprintf(notificacion, "8/%d/%s", numForm,chat);
+		printf("Notificacion: %s\n", notificacion);
+	
+		while(i<players)
+		{
+			write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+			i++;
+			
+		}
 		
+		}
 		
-		
-		
-		
-	    if((codigo==10)||(codigo==0))
+		if((codigo==10)||(codigo==0))
 		{bucle=1;
 		char notificacion[200];
 		printf("Buscando lista de conectados \n");
@@ -314,7 +423,7 @@ char respuesta[512];
 		pthread_mutex_unlock(&mutex);//molesta de nuevo
 		sprintf(notificacion,"4/%s",conectados);
 		
-		printf("Respuesta: %s\n", notificacion);
+		printf("Actualizacion de lista: %s\n", notificacion);
 		for (j=0;j<i;j++)//este bucle le enviara la tabla actualizada a todos los conectados.
 		{
 			write(sockets[j],notificacion,strlen(notificacion));
@@ -330,8 +439,8 @@ char respuesta[512];
 	
 
 int main(int argc, char *argv[])
-{
-	
+{   
+	IniciarPartida(&milistaP);
 	int sock_conn, sock_listen;
 	struct sockaddr_in serv_adr;
 	
@@ -349,7 +458,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// establecemos el puerto de escucha
-	serv_adr.sin_port = htons(9047);
+	serv_adr.sin_port = htons(9010);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind ");
 	
@@ -469,21 +578,21 @@ int AgregarJugador(ListaPartidas *listpart,ListaConectados *listcon, char jugado
 	}
 	
 	if (encontrado == 1)
-	{    players=1;
+	{   
 		int bucle=0;
 		milistaP.partidas[n].aceptado[0] == 1;
-		while ((j < listpart->partidas[n].max)&&(!bucle))
+		while ((j < listpart->partidas[n].max)&&(bucle==0))
 		{   if(p==NULL)
-			bucle=1;
+		    {bucle=1;}
 			else 
 			{strcpy(listpart->partidas[n].jugadores[j].nombre, p);
 			int pos = PosicionCliente(listcon,p);
 			listpart->partidas[n].jugadores[j].socket = listcon->conectados[pos].socket;
 			printf("socket de %s es %d\n", p, listcon->conectados[pos].socket);
 			p = strtok(NULL,"-");
-			}
 			j++;
 		    players++;
+			}
 		}
 		
 		return n;
