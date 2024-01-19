@@ -59,4 +59,16 @@ VERIFICADO POR: Andra Chong
 VIDEO POR:      Adria Fortuny
 
 LINK VIDEO:  https://youtu.be/wvA9u9tsjVk  
+------------------------------------------------------------------------------------------------------------
+
+## VersionFinal
+
+GENERADO POR:   Andra Chong
+
+VERIFICADO POR: Jose Silva
+
+VIDEO POR:      Adria Fortuny
+
+LINK VIDEO:  
+
 
