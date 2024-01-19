@@ -28,6 +28,9 @@ namespace WindowsFormsApplication1
             sms = ventana1.mensaje();
             Nom.Text = sms;
             partida = ventana1.part;
+            pictureBox1.Image = Image.FromFile(@"C:\ProyectoSO\clienteParchis\Imagenes\fondo.jpg");
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+           
         }
        
 
@@ -49,6 +52,11 @@ namespace WindowsFormsApplication1
             byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
             server.Send(msg);
             this.Close();
+
+        }
+
+        private void Form3_Load(object sender, EventArgs e)
+        {
 
         }
 

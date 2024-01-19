@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <mysql.h>
 #include <pthread.h>
+#include <my_global.h>
 typedef struct{
  char nombre[20];
  int socket
@@ -29,10 +30,11 @@ typedef struct{
  Partida partidas[100];
  int num
 }ListaPartidas;
-
+int ninvitados=0;
 int aceptar=1;
 int players=0;
 int i=0;
+int invt=0;
 int sockets[100];
 ListaConectados listaCon;
 ListaPartidas milistaP;
@@ -66,7 +68,7 @@ if(conn==NULL){
 	printf("Error al crear la conexion: &u %s\n",mysql_errno(conn),mysql_error(conn));
 	exit(1);
 }
-conn=mysql_real_connect (conn,"localhost","root","mysql","bd", 0,NULL,0);
+conn=mysql_real_connect (conn,"shiva2.upc.es","root","mysql","M8_BDParchis", 0,NULL,0);
 if(conn == NULL){
 	printf ("Error al iniciar la conexion: %u %s\n", mysql_error(conn));
 	exit(1);
@@ -268,7 +270,7 @@ char respuesta[512];
 		 write (sock_conn,respuesta, strlen(respuesta));
 		}
 
-		else if(codigo==11)
+		else if(codigo==11)//Codigo para invitar a los jugadores
         {
 		p = strtok(NULL,"/");
 		numForm=atoi(p);
@@ -282,18 +284,21 @@ char respuesta[512];
 		  p = strtok(NULL,"/");
 		  char invitados[100];
 		  char jugadores[100];
-		  strcpy(invitados,p);  
-		  sprintf(jugadores,"%s-%s-", anfitrion,invitados);
+		  strcpy(invitados,p);
+		  p = strtok(NULL,"/");
+		  ninvitados=atoi(p);
+		  sprintf(jugadores,"%s-%s-fin", anfitrion,invitados);
           printf("%s \n",jugadores);
 		  printf("El anfitrion es %s \n",anfitrion);
 		  printf("Esta invitando a %s \n",invitados);
+		  printf("Numero de invitandos  %d \n",ninvitados);
 
 		  
 		  partida = AgregarJugador(&milistaP,&listaCon,jugadores);
 		  milistaP.partidas[partida].aceptado[0] = 1;
 		  sprintf(notificacion, "5/%d/%d/%s", numForm, partida, anfitrion);
-		  printf("Notificacion: %s\n", notificacion);
-		  while(n<players)
+		  printf("Notificacion: %s \n", notificacion);
+		  while(n<=ninvitados)
 		  {
 			  write(milistaP.partidas[partida].jugadores[n].socket,notificacion,strlen(notificacion));
 		  n++;
@@ -302,8 +307,9 @@ char respuesta[512];
 			
 		}
 		
-		else if(codigo==13)
-		{   int nform;
+		else if(codigo==13)//Codigo para saber que jugadores aceptaron una partida
+		{   invt=invt+1;
+			int nform;
 		    char notificacion[100];
 		
 		     p = strtok(NULL, "/");
@@ -316,19 +322,21 @@ char respuesta[512];
 			if (n == 1)//n = 1 signifca que el jugador ha aceptado
 			{ int i;
 			  i=0;
-			  sprintf(notificacion, "6/%d/0/%d",nform, partida);
+			  
 			  
 				
 				while(strcmp(milistaP.partidas[partida].jugadores[i].nombre, nombre) != 0)
-				{
+				{    
 					i=i+1;
-					
 				}
+					
 				milistaP.partidas[partida].aceptado[i] = 1;//el cliente ha aceptado, por lo tanto aceptado = 1;
-				
-				i=0;
-				while (i<4)
+				if (ninvitados==invt)
 				{
+				i =0;
+				sprintf(notificacion, "6/%d/0/%d",nform, partida);
+				while (i<players)
+				{    
 					if(milistaP.partidas[partida].aceptado[i] == 1)//se añaden los jugadores que han aceptado la partida
 					{
 						sprintf(notificacion, "%s/%s", notificacion, milistaP.partidas[partida].jugadores[i].nombre);
@@ -337,8 +345,9 @@ char respuesta[512];
 					i=i+1;
 				}
 				sprintf(notificacion, "%s/",notificacion);
-				printf("respuesta: %s\n", notificacion);
-				i = 0;
+				printf("respuesta: %s \n", notificacion);
+				
+		          i=0;
 				while (i<4)
 				{
 					if (milistaP.partidas[partida].aceptado[n] == 1)//se les envia los jugadoes que han acpetado a todos los jugadores del lobby
@@ -349,11 +358,13 @@ char respuesta[512];
 					i++;
 					
 				}
+				invt=0;
+				}
 			}
 			else
 		     {
 				sprintf(notificacion, "6/%d/1/%d/%s",nform, partida,nombre);
-				printf("Rechazada codigo: %s\n",notificacion);
+				printf("Rechazada codigo: %s \n",notificacion);
 				write (milistaP.partidas[partida].jugadores[0].socket,notificacion, strlen(notificacion));
 				
 			}
@@ -361,7 +372,7 @@ char respuesta[512];
 		}
 		
 		else if(codigo==20)
-		{    int n=0;
+		{    
 			p = strtok(NULL,"/");
 			int partida=atoi(p);
 			p= strtok(NULL,"/");
@@ -370,24 +381,21 @@ char respuesta[512];
 			printf("Preparando partida \n");
 	         char notificacion [100];
 			sprintf(notificacion, "7/%d/%d/%d", numForm, partida,players);
-			printf("Notificacion: %s\n", notificacion);
+			printf("Notificacion: %s \n", notificacion);
 			while (i<players)
 			{       
-				if (milistaP.partidas[partida].aceptado[n] == 1)
+				if (milistaP.partidas[partida].aceptado[i] == 1)
 				{
 					sprintf(notificacion, "%s-%s", notificacion, milistaP.partidas[partida].jugadores[i].nombre);}
-				n++;
+				
 				i++;
 	 		}
-			sprintf(notificacion, "%s/", notificacion);
-		    printf("Notificacion: %s\n", notificacion);
-			i=0;
-			while(i<players)
-			{
-				write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
-				i++;
+			   sprintf(notificacion, "%s/", notificacion);
+		         printf("Notificacion: %s \n", notificacion);
+				write(sock_conn,notificacion,strlen(notificacion));
 				
-			}
+				
+			
 			
 		}
 		
@@ -403,7 +411,7 @@ char respuesta[512];
 		strcpy(chat,p);
 		char notificacion [100];
 		sprintf(notificacion, "8/%d/%s", numForm,chat);
-		printf("Notificacion: %s\n", notificacion);
+		printf("Notificacion: %s \n", notificacion);
 	
 		while(i<players)
 		{
@@ -414,6 +422,160 @@ char respuesta[512];
 		
 		}
 		
+		else if(codigo==22)
+		{ 
+		char chat[2000];
+		p= strtok(NULL,"/");
+		strcpy(chat,p);
+		char notificacion [2000];
+		sprintf(notificacion, "9/%s",chat);
+		printf("Notificacion: %s \n", notificacion);
+		i=0;
+		while(i<listaCon.num)
+		{
+			write(listaCon.conectados[i].socket,notificacion,strlen(notificacion));
+			i++;
+			
+		}
+		
+		}
+		else if(codigo==23)
+		{ 
+			char chat[2000];
+			p= strtok(NULL,"/");
+			strcpy(chat,p);
+			char notificacion [2000];
+			sprintf(notificacion, "9/%s",chat);
+			printf("Notificacion: %s \n", notificacion);
+			i=0;
+			while(i<listaCon.num)
+			{
+				write(listaCon.conectados[i].socket,notificacion,strlen(notificacion));
+				i++;
+				
+			}
+			
+		}
+		else if(codigo==30)
+		{   p = strtok(NULL,"/");
+		    int partida=atoi(p);	
+			p = strtok(NULL,"/");
+			int nForm=atoi(p);
+			
+			char jugador[20];
+			p= strtok(NULL,"/");
+			strcpy(jugador,p);
+			
+			p = strtok(NULL,"/");
+			int dados=atoi(p);
+			
+			char notificacion [200];
+			
+			sprintf(notificacion, "10/%d/%d" ,nForm,dados);
+			printf("Notificacion: %s \n", notificacion);
+			i=0;
+			
+			while(i<players)
+			{   if(strcmp(milistaP.partidas[partida].jugadores[i].nombre,jugador)!=0)
+				{write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+				}
+			i++;
+			}
+			
+			
+		}
+		else if(codigo==31)
+		{  	 p = strtok(NULL,"/");
+		int partida=atoi(p);
+		
+		p = strtok(NULL,"/");
+		int nForm=atoi(p);
+		
+		char color[20];
+		p= strtok(NULL,"/");
+		strcpy(color,p);
+		p = strtok(NULL,"/");
+		int ficha=atoi(p);
+		char turno[20];
+		p= strtok(NULL,"/");
+		strcpy(turno,p);
+		
+		p = strtok(NULL,"/");
+		int posx=atoi(p);
+		p = strtok(NULL,"/");
+		int posy=atoi(p);
+		
+		char notificacion [200];
+		
+		sprintf(notificacion, "11/%d/%s/%d/%d/%d/%s" ,nForm,color,posx,posy,ficha,turno);
+		printf("Notificacion: %s \n", notificacion);
+		i=0;
+		
+		while(i<players)
+		{
+	  write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+		i++;
+		}
+		
+		
+		}
+		else if(codigo==32)
+		{  		 p = strtok(NULL,"/");
+		int partida=atoi(p);
+			p = strtok(NULL,"/");
+			int nForm=atoi(p);
+			
+			char turno[20];
+			p= strtok(NULL,"/");
+			strcpy(turno,p);
+			
+			char notificacion [200];
+			
+			sprintf(notificacion, "12/%d/%s" ,nForm,turno);
+			printf("Notificacion: %s \n", notificacion);
+			i=0;
+			
+			while(i<players)
+			{
+				write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+				i++;
+			}
+			
+			
+		}
+		else if(codigo==33)
+		{  	 p = strtok(NULL,"/");
+		int partida=atoi(p);
+		
+		p = strtok(NULL,"/");
+		int nForm=atoi(p);
+		
+		char color[20];
+		p= strtok(NULL,"/");
+		strcpy(color,p);
+		p = strtok(NULL,"/");
+		int ficha=atoi(p);
+	
+		
+		p = strtok(NULL,"/");
+		int posx=atoi(p);
+		p = strtok(NULL,"/");
+		int posy=atoi(p);
+		
+		char notificacion [200];
+		
+		sprintf(notificacion, "13/%d/%s/%d/%d/%d/" ,nForm,color,posx,posy,ficha);
+		printf("Notificacion: %s \n", notificacion);
+		i=0;
+		
+		while(i<players)
+		{
+			write(milistaP.partidas[partida].jugadores[i].socket,notificacion,strlen(notificacion));
+			i++;
+		}
+		
+		
+		}
 		if((codigo==10)||(codigo==0))
 		{bucle=1;
 		char notificacion[200];
@@ -423,7 +585,7 @@ char respuesta[512];
 		pthread_mutex_unlock(&mutex);//molesta de nuevo
 		sprintf(notificacion,"4/%s",conectados);
 		
-		printf("Actualizacion de lista: %s\n", notificacion);
+		printf("Actualizacion de lista: %s \n", notificacion);
 		for (j=0;j<i;j++)//este bucle le enviara la tabla actualizada a todos los conectados.
 		{
 			write(sockets[j],notificacion,strlen(notificacion));
@@ -442,6 +604,7 @@ int main(int argc, char *argv[])
 {   
 	IniciarPartida(&milistaP);
 	int sock_conn, sock_listen;
+	int puerto=50038;
 	struct sockaddr_in serv_adr;
 	
 	// INICIALITZACIONS
@@ -458,7 +621,7 @@ int main(int argc, char *argv[])
 	//htonl formatea el numero que recibe al formato necesario
 	serv_adr.sin_addr.s_addr = htonl(INADDR_ANY);
 	// establecemos el puerto de escucha
-	serv_adr.sin_port = htons(9010);
+	serv_adr.sin_port = htons(puerto);
 	if (bind(sock_listen, (struct sockaddr *) &serv_adr, sizeof(serv_adr)) < 0)
 		printf ("Error al bind ");
 	
@@ -469,10 +632,10 @@ int main(int argc, char *argv[])
 	pthread_t thread;
 	// Bucle para atender a 5 clientes
 	for (;;){
-		printf ("Escuchando\n");
+		printf ("Escuchando \n");
 		
 		sock_conn = accept(sock_listen, NULL, NULL);
-		printf ("He recibido conexion\n");
+		printf ("He recibido conexion \n");
 		
 		sockets[i] =sock_conn;
 		//sock_conn es el socket que usaremos para este cliente
@@ -582,13 +745,13 @@ int AgregarJugador(ListaPartidas *listpart,ListaConectados *listcon, char jugado
 		int bucle=0;
 		milistaP.partidas[n].aceptado[0] == 1;
 		while ((j < listpart->partidas[n].max)&&(bucle==0))
-		{   if(p==NULL)
+		{   if(strcmp(p,"fin")==0)
 		    {bucle=1;}
 			else 
 			{strcpy(listpart->partidas[n].jugadores[j].nombre, p);
 			int pos = PosicionCliente(listcon,p);
 			listpart->partidas[n].jugadores[j].socket = listcon->conectados[pos].socket;
-			printf("socket de %s es %d\n", p, listcon->conectados[pos].socket);
+			printf("socket de %s es %d \n", p, listcon->conectados[pos].socket);
 			p = strtok(NULL,"-");
 			j++;
 		    players++;

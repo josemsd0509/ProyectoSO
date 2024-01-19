@@ -25,6 +25,9 @@ namespace WindowsFormsApplication1
             ventana1 = ventana;
             ventana1.Invoke(new Action(() =>
             { ventana1.Visible = false; }));
+            pictureBox1.Image = Image.FromFile(@"C:\ProyectoSO\clienteParchis\Imagenes\carga.gif");
+           pictureBox1.SizeMode=PictureBoxSizeMode.StretchImage;
+           
             
         }
         public struct Datos
@@ -42,8 +45,12 @@ namespace WindowsFormsApplication1
              ventana1.Invoke(new Action(() =>
            { ventana1.Visible = true; }));
             ventana1.SetNombre(sms);
+            ventana1.pictureBox1.Image = Image.FromFile(@"C:\ProyectoSO\clienteParchis\Imagenes\fondo.jpg");
+            ventana1.pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
 
         }
+
+       
 
     }
 }
