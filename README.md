@@ -35,7 +35,6 @@ VIDEO POR:      Andrea Chong
 
 LINK VIDEO:     https://youtu.be/XogUk1mZDJ0
 
-
 ------------------------------------------------------------------------------------------------------------
 
 ## V4
@@ -59,6 +58,7 @@ VERIFICADO POR: Andra Chong
 VIDEO POR:      Adria Fortuny
 
 LINK VIDEO:  https://youtu.be/wvA9u9tsjVk  
+
 ------------------------------------------------------------------------------------------------------------
 
 ## VersionFinal
