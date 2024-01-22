@@ -69,6 +69,6 @@ VERIFICADO POR: Jose Silva
 
 VIDEO POR:      Adria Fortuny
 
-LINK VIDEO:  
+LINK VIDEO:  https://youtu.be/YI7Lcl8kTv8
 
 
